@@ -34,8 +34,8 @@ RUN if [ "$(uname -m)" = "x86_64" ]; then yum install -y devtoolset-11-gcc devto
 ENV PATH=/opt/rh/devtoolset-11/root/usr/bin:$PATH
 RUN --mount=type=cache,target=/root/.ccache \
     cmake --preset 'CPU' \
-        && cmake --build --parallel --preset 'CPU' \
-        && cmake --install build --component CPU --strip --parallel 8
+    && cmake --build --parallel --preset 'CPU' \
+    && cmake --install build --component CPU --strip --parallel 8
 
 FROM base AS cuda-11
 ARG CUDA11VERSION=11.3
@@ -43,8 +43,8 @@ RUN yum install -y cuda-toolkit-${CUDA11VERSION//./-}
 ENV PATH=/usr/local/cuda-11/bin:$PATH
 RUN --mount=type=cache,target=/root/.ccache \
     cmake --preset 'CUDA 11' \
-        && cmake --build --parallel --preset 'CUDA 11' \
-        && cmake --install build --component CUDA --strip --parallel 8
+    && cmake --build --parallel --preset 'CUDA 11' \
+    && cmake --install build --component CUDA --strip --parallel 8
 
 FROM base AS cuda-12
 ARG CUDA12VERSION=12.4
@@ -52,14 +52,14 @@ RUN yum install -y cuda-toolkit-${CUDA12VERSION//./-}
 ENV PATH=/usr/local/cuda-12/bin:$PATH
 RUN --mount=type=cache,target=/root/.ccache \
     cmake --preset 'CUDA 12' \
-        && cmake --build --parallel --preset 'CUDA 12' \
-        && cmake --install build --component CUDA --strip --parallel 8
+    && cmake --build --parallel --preset 'CUDA 12' \
+    && cmake --install build --component CUDA --strip --parallel 8
 
 FROM base AS rocm-6
 RUN --mount=type=cache,target=/root/.ccache \
     cmake --preset 'ROCm 6' \
-        && cmake --build --parallel --preset 'ROCm 6' \
-        && cmake --install build --component HIP --strip --parallel 8
+    && cmake --build --parallel --preset 'ROCm 6' \
+    && cmake --install build --component HIP --strip --parallel 8
 
 FROM --platform=linux/arm64 nvcr.io/nvidia/l4t-jetpack:${JETPACK5VERSION} AS jetpack-5
 ARG CMAKEVERSION
@@ -69,8 +69,8 @@ COPY CMakeLists.txt CMakePresets.json .
 COPY ml/backend/ggml/ggml ml/backend/ggml/ggml
 RUN --mount=type=cache,target=/root/.ccache \
     cmake --preset 'JetPack 5' \
-        && cmake --build --parallel --preset 'JetPack 5' \
-        && cmake --install build --component CUDA --strip --parallel 8
+    && cmake --build --parallel --preset 'JetPack 5' \
+    && cmake --install build --component CUDA --strip --parallel 8
 
 FROM --platform=linux/arm64 nvcr.io/nvidia/l4t-jetpack:${JETPACK6VERSION} AS jetpack-6
 ARG CMAKEVERSION
@@ -80,8 +80,8 @@ COPY CMakeLists.txt CMakePresets.json .
 COPY ml/backend/ggml/ggml ml/backend/ggml/ggml
 RUN --mount=type=cache,target=/root/.ccache \
     cmake --preset 'JetPack 6' \
-        && cmake --build --parallel --preset 'JetPack 6' \
-        && cmake --install build --component CUDA --strip --parallel 8
+    && cmake --build --parallel --preset 'JetPack 6' \
+    && cmake --install build --component CUDA --strip --parallel 8
 
 FROM base AS build
 ARG GOVERSION=1.23.4
@@ -111,7 +111,7 @@ FROM ${FLAVOR} AS archive
 COPY --from=cpu dist/lib/ollama /lib/ollama
 COPY --from=build /bin/ollama /bin/ollama
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 RUN apt-get update \
     && apt-get install -y ca-certificates \
     && apt-get clean \
