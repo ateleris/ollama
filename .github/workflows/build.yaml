@@ -27,6 +27,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: Dockerfile.ubuntu-only
           platforms: linux/amd64
           push: true
           tags: |
