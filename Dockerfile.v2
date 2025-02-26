@@ -1,0 +1,38 @@
+FROM ubuntu:22.04
+
+# Install basic dependencies
+RUN apt-get update && \
+    apt-get install -y ca-certificates curl build-essential git && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install CUDA toolkit
+RUN curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb -o cuda-keyring.deb && \
+    dpkg -i cuda-keyring.deb && \
+    apt-get update && \
+    apt-get install -y cuda-toolkit-12-4 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Go
+ARG GOVERSION=1.23.4
+RUN curl -fsSL https://golang.org/dl/go${GOVERSION}.linux-amd64.tar.gz | tar xz -C /usr/local
+ENV PATH=/usr/local/go/bin:/usr/local/cuda/bin:$PATH
+
+# Set up build environment
+ENV CGO_ENABLED=1
+ENV GOFLAGS="'-ldflags=-w -s'"
+
+# Build Ollama
+WORKDIR /go/src/github.com/ollama/ollama
+COPY . .
+RUN go build -trimpath -buildmode=pie -o /bin/ollama .
+
+# Configure the runtime environment
+ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV OLLAMA_HOST=0.0.0.0:11434
+EXPOSE 11434
+ENTRYPOINT ["/bin/ollama"]
+CMD ["serve"]
